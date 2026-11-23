@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>184Design – Porte-kakémonos sous marquise – maquette de principe</title>
+<style>
+:root{--ink:#1d2b3a;--muted:#5f6b77;--line:#c9cfd5;--paper:#f6f7f8;--accent:#c4512b}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;color:var(--ink);background:var(--paper)}
+main{max-width:1200px;margin:0 auto;padding:24px 20px 32px;display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px}
+h1{font-size:22px;font-weight:500;margin:0 0 4px}
+.sub{color:var(--muted);font-size:14px;margin:0 0 16px}
+#view{width:100%;height:68vh;min-height:420px;border:1px solid var(--line);background:#dfe6ea;cursor:grab;touch-action:none;display:block}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px;font-size:14px;color:var(--muted)}
+.bar span{margin-left:8px}.bar span:first-child{margin-left:0}
+button{font:inherit;font-size:14px;padding:6px 12px;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:4px;cursor:pointer}
+button.on{border-color:var(--ink);background:var(--ink);color:#fff}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+aside{font-size:14px;line-height:1.55}
+aside h2{font-size:15px;font-weight:500;margin:0 0 8px;padding-bottom:6px;border-bottom:1px solid var(--ink)}
+aside ul{margin:0 0 20px;padding-left:18px}aside li{margin-bottom:6px}
+.key{display:inline-block;width:12px;height:12px;vertical-align:-1px;margin-right:6px;border:1px solid #888}
+.cart{border:1px solid var(--ink);font-size:13px;margin-top:8px}
+.cart div{display:flex;justify-content:space-between;padding:5px 8px;border-top:1px solid var(--line)}
+.cart div:first-child{border-top:0;font-weight:500}
+.hint{font-size:13px;color:var(--muted);margin-top:8px}
+@media(max-width:860px){main{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+<section>
+<h1>Porte-kakémonos sous marquise</h1>
+<p class="sub">Maquette de principe pour chiffrage – cotes, entraxes et sections à confirmer au relevé</p>
+<canvas id="view" aria-label="Maquette 3D des cadres porte-kakémonos sous la marquise"></canvas>
+<div class="bar">
+<span>Format</span><button id="fA">500 × 1000 mm</button><button id="fB">800 × 1200 mm</button>
+<span>Vue</span><button id="cs">Trottoir</button><button id="cf">Face</button><button id="cp">Profil</button><button id="cd">Détail fixation</button>
+</div>
+<p class="hint">Glisser pour tourner autour, molette ou pincement pour zoomer.</p>
+</section>
+<aside>
+<h2>Principe</h2>
+<ul>
+<li>Cadre en tube alu thermolaqué blanc : traverse haute rectangulaire, deux montants, traverse basse cintrée suivant la courbe du visuel.</li>
+<li>Fixation rigide, sans balancement ni jambe de force : traverse haute serrée sous un plat de la grille (2 pinces) et boulonnée à plat sur un écarteur d’environ 600 mm, serré sur le tube longitudinal par 2 pinces de chaque côté.</li>
+<li>Aucun perçage ni soudure sur l’existant (bâtiment patrimonial).</li>
+<li>Câble antichute inox indépendant pour chaque cadre.</li>
+<li>Textile recto verso en housse enfilée par le haut, fourni par le client.</li>
+</ul>
+<h2>Légende</h2>
+<ul style="list-style:none;padding-left:0">
+<li><span class="key" style="background:#f4f2ec"></span>Structure alu thermolaquée</li>
+<li><span class="key" style="background:#aeb3b8"></span>Pinces et visserie inox</li>
+<li><span class="key" style="background:#d85a30"></span>Câble antichute</li>
+<li><span class="key" style="background:#2f9e6a"></span>Visuel (indicatif)</li>
+</ul>
+<div class="cart">
+<div><span>184Design</span><span>Bureau d’études</span></div>
+<div><span>Objet</span><span>Cadres kakémonos</span></div>
+<div><span>Quantité</span><span>24 + 2 prototypes</span></div>
+<div><span>Version</span><span>V1 – 23/11/2026</span></div>
+<div><span>Contact</span><span>sophie@184design.fr</span></div>
+</div>
+</aside>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const cvs=document.getElementById('view');
+const renderer=new THREE.WebGLRenderer({canvas:cvs,antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setClearColor(0xdfe6ea);
+const scene=new THREE.Scene();scene.fog=new THREE.Fog(0xdfe6ea,16,38);
+const cam=new THREE.PerspectiveCamera(45,1,0.05,100);
+function resize(){const w=cvs.clientWidth,h=cvs.clientHeight;renderer.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();}
+window.addEventListener('resize',resize);
+scene.add(new THREE.HemisphereLight(0xffffff,0x8a8a80,0.8));
+const sun=new THREE.DirectionalLight(0xffffff,0.55);sun.position.set(6,10,8);scene.add(sun);
+const M=c=>new THREE.MeshLambertMaterial({color:c});
+function box(w,h,d,mat,x,y,z,p){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);(p||scene).add(m);return m;}
+const white=M(0xf4f2ec),steel=M(0xaeb3b8),dark=M(0x2a2f33);
+box(22,8,0.6,M(0xd9d2c3),0,4,-0.3);
+[-7.5,-2.5,2.5,7.5].forEach(x=>box(3.4,3.5,0.05,M(0x26303a),x,2.05,0.01));
+[-10,-5,0,5,10].forEach(x=>box(0.9,4.4,0.14,M(0xe9e5dd),x,2.2,0.07));
+box(22,0.1,6,M(0xaaa79f),0,-0.05,3);box(22,0.1,8,M(0x55585c),0,-0.09,10);box(22,0.16,0.22,M(0xbdb8ad),0,0.02,6);
+box(22,0.08,3.3,dark,0,5.0,1.6);
+[0.5,1.2,1.9,2.6].forEach(z=>box(22,0.14,0.08,dark,0,4.78,z));
+const mc=document.createElement('canvas');mc.width=mc.height=64;const g=mc.getContext('2d');
+g.strokeStyle='rgba(225,225,220,0.95)';g.lineWidth=5;g.beginPath();g.moveTo(32,0);g.lineTo(64,32);g.lineTo(32,64);g.lineTo(0,32);g.closePath();g.stroke();
+const mt=new THREE.CanvasTexture(mc);mt.wrapS=mt.wrapT=THREE.RepeatWrapping;mt.repeat.set(180,26);mt.anisotropy=8;
+const mesh=new THREE.Mesh(new THREE.PlaneGeometry(22,3.1),new THREE.MeshLambertMaterial({map:mt,transparent:true,side:THREE.DoubleSide,depthWrite:false}));
+mesh.rotation.x=-Math.PI/2;mesh.position.set(0,4.56,1.6);scene.add(mesh);
+[0.12,1.6,3.08].forEach(z=>{const c=new THREE.Mesh(new THREE.CylinderGeometry(0.045,0.045,22,12),white);c.rotation.z=Math.PI/2;c.position.set(0,4.5,z);scene.add(c);});
+for(let x=-10;x<=10.01;x+=1.25)box(0.05,0.09,3,white,x,4.5,1.6);
+const warm=new THREE.MeshBasicMaterial({color:0xf2b25c});
+for(let i=0;i<160;i++){const s=new THREE.Mesh(new THREE.SphereGeometry(0.018,6,6),warm);s.position.set(-11+Math.random()*22,4.46,0.2+Math.random()*2.8);scene.add(s);}
+const person=new THREE.Group();
+const body=new THREE.Mesh(new THREE.CylinderGeometry(0.17,0.2,1.45,12),M(0x3d4a5c));body.position.y=0.73;person.add(body);
+const head=new THREE.Mesh(new THREE.SphereGeometry(0.12,12,12),M(0xc9a184));head.position.y=1.6;person.add(head);
+person.position.set(1.2,0,4.2);scene.add(person);
+function tex(w,h){const c=document.createElement('canvas');c.width=256;c.height=Math.round(256*h/w);const x=c.getContext('2d');const W=c.width,Hc=c.height;
+x.fillStyle='#2f9e6a';x.beginPath();x.moveTo(0,0);x.lineTo(W,0);x.lineTo(W,Hc*0.86);x.quadraticCurveTo(W/2,Hc*1.12,0,Hc*0.86);x.closePath();x.fill();
+x.fillStyle='rgba(0,0,0,0.15)';x.fillRect(0,0,W,Hc*0.035);
+x.fillStyle='#ffffff';x.textAlign='center';x.font='500 34px sans-serif';x.fillText('VISUEL',W/2,Hc*0.45);
+x.font='22px sans-serif';x.fillText('recto verso',W/2,Hc*0.45+34);
+const t=new THREE.CanvasTexture(c);t.anisotropy=8;return t;}
+function rod(len,rad,mat,x,y,z,p){const c=new THREE.Mesh(new THREE.CylinderGeometry(rad,rad,len,10),mat);c.position.set(x,y,z);p.add(c);return c;}
+let fmt='B',units=[];
+function build(){units.forEach(u=>scene.remove(u));units=[];
+const w=fmt==='A'?0.5:0.8,h=fmt==='A'?1.0:1.2,zc=1.6,yTop=4.405,rr=0.013;const t=tex(w,h);
+const fm=new THREE.MeshLambertMaterial({map:t,transparent:true,alphaTest:0.4});
+[-7.5,-5,-2.5,0,2.5,5,7.5].forEach(x=>{const grp=new THREE.Group();grp.position.x=x;
+box(0.64,0.022,0.045,white,0,4.443,zc,grp);
+[-0.3,-0.2,0.2,0.3].forEach(xx=>{box(0.04,0.02,0.07,steel,xx,4.43,zc,grp);box(0.008,0.13,0.008,steel,xx,4.49,zc+0.03,grp);});
+[zc-w/2+0.06,zc+w/2-0.06].forEach(zz=>{box(0.07,0.02,0.05,steel,0,4.44,zz,grp);box(0.07,0.015,0.05,steel,0,4.555,zz,grp);box(0.01,0.12,0.01,steel,0.03,4.5,zz,grp);});
+grp.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0.015,4.58,zc+0.12),new THREE.Vector3(0.015,yTop-0.02,zc+0.12)]),new THREE.LineBasicMaterial({color:0xd85a30})));
+const frm=new THREE.Group();frm.position.set(0,yTop,zc);grp.add(frm);
+[[Math.PI/2,0.009],[-Math.PI/2,-0.009]].forEach(([r,o])=>{const p=new THREE.Mesh(new THREE.PlaneGeometry(w,h),fm);p.rotation.y=r;p.position.set(o,-h/2-0.02,0);frm.add(p);});
+box(0.04,0.022,w,white,0,0,0,frm);
+[-1,1].forEach(s=>rod(h*0.86,rr,white,0,-0.02-h*0.43,s*(w/2),frm));
+const y0=-0.02-h*0.86,yc=-0.02-h*1.12;
+const curve=new THREE.QuadraticBezierCurve3(new THREE.Vector3(0,y0,-w/2),new THREE.Vector3(0,yc,0),new THREE.Vector3(0,y0,w/2));
+frm.add(new THREE.Mesh(new THREE.TubeGeometry(curve,32,rr,8,false),white));
+[-1,1].forEach(s=>{const k=new THREE.Mesh(new THREE.SphereGeometry(rr*1.05,10,10),white);k.position.set(0,y0,s*w/2);frm.add(k);});
+units.push(grp);scene.add(grp);});}
+const target=new THREE.Vector3();let th,ph,r;
+function view(k){if(k==='s'){target.set(0,3.4,1.8);th=1.1;ph=1.78;r=9.5;}else if(k==='f'){target.set(0,3.85,1.6);th=Math.PI/2;ph=1.62;r=2.6;}else if(k==='p'){target.set(0,3.95,1.6);th=0.02;ph=1.66;r=2.8;}else{target.set(0,4.3,1.6);th=0.7;ph=2.0;r=1.6;}}
+function place(){cam.position.set(target.x+r*Math.sin(ph)*Math.sin(th),target.y+r*Math.cos(ph),target.z+r*Math.sin(ph)*Math.cos(th));cam.lookAt(target);}
+const pts=new Map();let lastDist=0;
+cvs.addEventListener('pointerdown',e=>{pts.set(e.pointerId,{x:e.clientX,y:e.clientY});cvs.setPointerCapture(e.pointerId);cvs.style.cursor='grabbing';});
+cvs.addEventListener('pointermove',e=>{if(!pts.has(e.pointerId))return;const p=pts.get(e.pointerId);
+if(pts.size===1){th-=(e.clientX-p.x)*0.006;ph=Math.min(2.4,Math.max(0.4,ph-(e.clientY-p.y)*0.005));}
+pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+if(pts.size===2){const [a,b]=[...pts.values()];const d=Math.hypot(a.x-b.x,a.y-b.y);if(lastDist)r=Math.min(18,Math.max(1.2,r*lastDist/d));lastDist=d;}});
+const up=e=>{pts.delete(e.pointerId);lastDist=0;cvs.style.cursor='grab';};
+cvs.addEventListener('pointerup',up);cvs.addEventListener('pointercancel',up);
+cvs.addEventListener('wheel',e=>{e.preventDefault();r=Math.min(18,Math.max(1.2,r*(1+Math.sign(e.deltaY)*0.08)));},{passive:false});
+const btn=id=>document.getElementById(id);
+function mark(){btn('fA').classList.toggle('on',fmt==='A');btn('fB').classList.toggle('on',fmt==='B');}
+btn('fA').onclick=()=>{fmt='A';build();mark();};btn('fB').onclick=()=>{fmt='B';build();mark();};
+btn('cs').onclick=()=>view('s');btn('cf').onclick=()=>view('f');btn('cp').onclick=()=>view('p');btn('cd').onclick=()=>view('d');
+resize();view('s');build();mark();
+(function loop(){place();renderer.render(scene,cam);requestAnimationFrame(loop);})();
+</script>
+</body>
+</html>
